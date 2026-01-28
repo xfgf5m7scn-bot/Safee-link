@@ -24,4 +24,218 @@ body {
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   position: relative;
-  z-index:
+  z-index: 2; /* Fixed z-index */
+  max-width: 350px;
+}
+
+img.main-gif {
+  width: 200px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+button {
+  padding: 15px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 10px;
+  transition: all 0.3s ease;
+}
+
+#yesBtn { background-color: #ff4d6d; color: white; }
+#noBtn { background-color: #6c757d; color: white; }
+
+#noBtn.runaway {
+  position: absolute;
+}
+
+/* Floating GIFs */
+.floating-gif {
+  position: absolute;
+  bottom: -100px;
+  width: 80px;
+  animation: floatUp linear forwards;
+  z-index: 1;
+}
+
+@keyframes floatUp {
+  to {
+    transform: translateY(-120vh);
+    opacity: 0;
+  }
+}
+
+/* Fireworks canvas */
+#fireworks {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  z-index: 0;
+}
+
+/* Hide YouTube player */
+#musicPlayer {
+  position: fixed;
+  width: 0;
+  height: 0;
+  border: 0;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Background Music (muted autoplay) -->
+<iframe id="musicPlayer"
+src="https://www.youtube.com/embed/9uQk8GQ0V9Y?autoplay=1&mute=1&loop=1&playlist=9uQk8GQ0V9Y"
+allow="autoplay">
+</iframe>
+
+<canvas id="fireworks"></canvas>
+
+<div class="container" id="mainBox">
+  <h1>Elizabeth, will you be my Valentine? 💘</h1>
+
+  <img class="main-gif" src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" alt="Minion heart">
+
+  <div>
+    <button id="yesBtn">Yes 💖</button>
+    <button id="noBtn">No 🙈</button>
+  </div>
+</div>
+
+<script>
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const mainBox = document.getElementById("mainBox");
+
+let yesSize = 18;
+let noClicks = 0;
+
+/* NO BUTTON */
+noBtn.addEventListener("click", () => {
+  noClicks++;
+
+  // Grow YES button
+  yesSize += 10;
+  yesBtn.style.fontSize = yesSize + "px";
+  yesBtn.style.padding = yesSize + "px " + (yesSize * 2) + "px";
+
+  const messages = [
+    "Are you sure? 😢",
+    "Really sure? 🥺",
+    "Think again 💔",
+    "Last chance 😭",
+    "Okay now you're just playing 😅"
+  ];
+
+  if (noClicks <= 5) {
+    noBtn.textContent = messages[noClicks - 1];
+  }
+
+  // Activate runaway mode after 5 clicks
+  if (noClicks === 5) {
+    noBtn.classList.add("runaway");
+  }
+});
+
+/* Runaway logic for NO button */
+document.addEventListener("mousemove", (e) => {
+  if (!noBtn.classList.contains("runaway")) return;
+
+  const btnRect = noBtn.getBoundingClientRect();
+  const distance = Math.hypot(
+    e.clientX - (btnRect.left + btnRect.width / 2),
+    e.clientY - (btnRect.top + btnRect.height / 2)
+  );
+
+  if (distance < 120) {
+    const x = Math.random() * (window.innerWidth - btnRect.width);
+    const y = Math.random() * (window.innerHeight - btnRect.height);
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+  }
+});
+
+/* YES BUTTON */
+yesBtn.addEventListener("click", () => {
+  document.querySelectorAll(".floating-gif").forEach(el => el.remove());
+  startFireworks();
+
+  mainBox.innerHTML = `
+    <h1>YAY ELIZABETH!!! ❤️🥰</h1>
+    <p>You just made me the happiest person alive 💕</p>
+    <a href="sms:+15551234567?body=Yes%20I%20will%20be%20your%20Valentine%20❤️">
+      <button style="font-size:22px; background:#ff4d6d; color:white;">Send Text 💌</button>
+    </a>
+  `;
+});
+
+/* FLOATING GIFS */
+function createFloatingGif() {
+  const gif = document.createElement("img");
+  gif.src = "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif";
+  gif.className = "floating-gif";
+  gif.style.left = Math.random() * 100 + "vw";
+  gif.style.animationDuration = (Math.random() * 3 + 4) + "s";
+  document.body.appendChild(gif);
+
+  setTimeout(() => gif.remove(), 7000);
+}
+setInterval(createFloatingGif, 800);
+
+/* FIREWORKS */
+function startFireworks() {
+  const canvas = document.getElementById("fireworks");
+  canvas.style.display = "block";
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+
+  function createFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height / 2;
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x, y,
+        angle: Math.random() * 2 * Math.PI,
+        speed: Math.random() * 5 + 2,
+        radius: 2
+      });
+    }
+  }
+
+  function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach((p, i) => {
+      p.x += Math.cos(p.angle) * p.speed;
+      p.y += Math.sin(p.angle) * p.speed;
+      p.speed *= 0.95;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `hsl(${Math.random()*360},100%,60%)`;
+      ctx.fill();
+
+      if (p.speed < 0.5) particles.splice(i, 1);
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  setInterval(createFirework, 700);
+  animate();
+}
+</script>
+
+</body>
+</html>
