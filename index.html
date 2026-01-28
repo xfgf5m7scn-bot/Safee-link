@@ -47,7 +47,7 @@ img.main-gif {
 /* NO button playground */
 .no-zone {
   position: relative;
-  height: 90px; /* safe movement area */
+  height: 90px;
   overflow: hidden;
 }
 
@@ -105,7 +105,6 @@ let noClicks = 0;
 noBtn.addEventListener("click", () => {
   noClicks++;
 
-  // Grow YES button safely (won't overlap now)
   yesSize += 6;
   yesBtn.style.fontSize = yesSize + "px";
   yesBtn.style.padding = yesSize + "px " + (yesSize * 2) + "px";
@@ -125,7 +124,7 @@ noBtn.addEventListener("click", () => {
   moveNoButton();
 });
 
-/* ---- MOVE NO BUTTON INSIDE SAFE ZONE ---- */
+/* Keep NO button inside safe zone */
 function moveNoButton() {
   const zoneRect = noZone.getBoundingClientRect();
   const btnRect = noBtn.getBoundingClientRect();
@@ -141,21 +140,43 @@ function moveNoButton() {
   noBtn.style.transform = "none";
 }
 
-/* Touch + mouse */
 noZone.addEventListener("mousemove", moveNoButton);
 noZone.addEventListener("touchstart", moveNoButton);
 
-/* ---- YES BUTTON ---- */
+/* ---- YES BUTTON (FAKE-OUT) ---- */
 yesBtn.addEventListener("click", () => {
+
+  // Step 1: Fake rejection
   mainBox.innerHTML = `
-    <h1>YAY ELIZABETH!!! ❤️🥰</h1>
-    <p>You just made my whole day 💕</p>
-    <a href="sms:6304498464?body=Yes%20I%20will%20be%20your%20Valentine%20❤️">
-      <button style="font-size:22px; background:#ff4d6d; color:white; padding:16px 32px; border-radius:12px;">
-        Send Text 💌
-      </button>
-    </a>
+    <h1>No accepted.</h1>
+    <p>Processing response…</p>
   `;
+
+  // Step 2: Just kidding
+  setTimeout(() => {
+    mainBox.innerHTML = `
+      <h1>…just kidding 😈</h1>
+    `;
+  }, 700);
+
+  // Step 3: Real celebration
+  setTimeout(() => {
+    mainBox.innerHTML = `
+      <h1>YAY ELIZABETH!!! ❤️🥰</h1>
+      <p>You just made my whole day 💕</p>
+      <a href="sms:6304498464?body=Yes%20I%20will%20be%20your%20Valentine%20❤️">
+        <button style="
+          font-size:22px;
+          background:#ff4d6d;
+          color:white;
+          padding:16px 32px;
+          border-radius:12px;
+        ">
+          Send Text 💌
+        </button>
+      </a>
+    `;
+  }, 1400);
 });
 </script>
 
