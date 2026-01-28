@@ -20,23 +20,30 @@ body {
 
 .container {
   background: white;
-  padding: 35px;
+  padding: 25px 25px 20px; /* SCOOTED UP */
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   position: relative;
   z-index: 2;
   width: 340px;
+  overflow: hidden; /* HARD STOP */
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 img.main-gif {
-  width: 220px;
+  width: 190px; /* slightly smaller */
   border-radius: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .buttons {
   position: relative;
-  height: 140px; /* KEY: contains runaway button */
+  height: 120px; /* controlled playground */
+  margin-top: 5px;
 }
 
 button {
@@ -51,7 +58,9 @@ button {
 #yesBtn {
   background-color: #ff4d6d;
   color: white;
-  margin-right: 10px;
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 #noBtn {
@@ -60,10 +69,6 @@ button {
   position: absolute;
   right: 0;
   bottom: 0;
-}
-
-#noBtn.runaway {
-  position: absolute;
 }
 </style>
 </head>
@@ -94,7 +99,7 @@ let noClicks = 0;
 noBtn.addEventListener("click", () => {
   noClicks++;
 
-  yesSize += 8;
+  yesSize += 6;
   yesBtn.style.fontSize = yesSize + "px";
   yesBtn.style.padding = yesSize + "px " + (yesSize * 2) + "px";
 
@@ -110,13 +115,10 @@ noBtn.addEventListener("click", () => {
     noBtn.textContent = messages[noClicks - 1];
   }
 
-  if (noClicks === 5) {
-    noBtn.classList.add("runaway");
-    moveNoButton();
-  }
+  moveNoButton();
 });
 
-/* ---- KEEP BUTTON INSIDE CONTAINER ---- */
+/* ---- CONTAINED MOVEMENT ---- */
 function moveNoButton() {
   const boxRect = buttonBox.getBoundingClientRect();
   const btnRect = noBtn.getBoundingClientRect();
@@ -131,7 +133,7 @@ function moveNoButton() {
   noBtn.style.top = y + "px";
 }
 
-/* Touch + Mouse */
+/* Touch + mouse support */
 buttonBox.addEventListener("mousemove", moveNoButton);
 buttonBox.addEventListener("touchstart", moveNoButton);
 
