@@ -20,65 +20,55 @@ body {
 
 .container {
   background: white;
-  padding: 40px;
+  padding: 35px;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   position: relative;
-  z-index: 2; /* Fixed z-index */
-  max-width: 350px;
+  z-index: 2;
+  max-width: 360px;
 }
 
 img.main-gif {
-  width: 200px;
+  width: 220px;
   border-radius: 15px;
   margin-bottom: 15px;
 }
 
 button {
-  padding: 15px 30px;
+  padding: 15px 28px;
   font-size: 18px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   margin: 10px;
   transition: all 0.3s ease;
 }
 
-#yesBtn { background-color: #ff4d6d; color: white; }
-#noBtn { background-color: #6c757d; color: white; }
+#yesBtn {
+  background-color: #ff4d6d;
+  color: white;
+}
+
+#noBtn {
+  background-color: #6c757d;
+  color: white;
+  position: relative;
+}
 
 #noBtn.runaway {
-  position: absolute;
-}
-
-/* Floating GIFs */
-.floating-gif {
-  position: absolute;
-  bottom: -100px;
-  width: 80px;
-  animation: floatUp linear forwards;
-  z-index: 1;
-}
-
-@keyframes floatUp {
-  to {
-    transform: translateY(-120vh);
-    opacity: 0;
-  }
+  position: fixed;
+  z-index: 3;
 }
 
 /* Fireworks canvas */
 #fireworks {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   display: none;
   z-index: 0;
 }
 
-/* Hide YouTube player */
+/* Hidden music iframe */
 #musicPlayer {
   position: fixed;
   width: 0;
@@ -90,10 +80,11 @@ button {
 
 <body>
 
-<!-- Background Music (muted autoplay) -->
-<iframe id="musicPlayer"
-src="https://www.youtube.com/embed/9uQk8GQ0V9Y?autoplay=1&mute=1&loop=1&playlist=9uQk8GQ0V9Y"
-allow="autoplay">
+<!-- Background Music -->
+<iframe
+  id="musicPlayer"
+  src="https://www.youtube.com/embed/9uQk8GQ0V9Y?autoplay=1&mute=1&loop=1&playlist=9uQk8GQ0V9Y"
+  allow="autoplay">
 </iframe>
 
 <canvas id="fireworks"></canvas>
@@ -101,7 +92,8 @@ allow="autoplay">
 <div class="container" id="mainBox">
   <h1>Elizabeth, will you be my Valentine? 💘</h1>
 
-  <img class="main-gif" src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" alt="Minion heart">
+  <!-- MAIN GIF (Option 1) -->
+  <img class="main-gif" src="IMG_7130.gif" alt="Minion in the woods">
 
   <div>
     <button id="yesBtn">Yes 💖</button>
@@ -113,16 +105,17 @@ allow="autoplay">
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const mainBox = document.getElementById("mainBox");
+const musicPlayer = document.getElementById("musicPlayer");
 
 let yesSize = 18;
 let noClicks = 0;
 
-/* NO BUTTON */
+/* ---- NO BUTTON LOGIC ---- */
 noBtn.addEventListener("click", () => {
   noClicks++;
 
   // Grow YES button
-  yesSize += 10;
+  yesSize += 8;
   yesBtn.style.fontSize = yesSize + "px";
   yesBtn.style.padding = yesSize + "px " + (yesSize * 2) + "px";
 
@@ -131,102 +124,111 @@ noBtn.addEventListener("click", () => {
     "Really sure? 🥺",
     "Think again 💔",
     "Last chance 😭",
-    "Okay now you're just playing 😅"
+    "Okay now you're just teasing 😅"
   ];
 
-  if (noClicks <= 5) {
+  if (noClicks <= messages.length) {
     noBtn.textContent = messages[noClicks - 1];
   }
 
-  // Activate runaway mode after 5 clicks
   if (noClicks === 5) {
     noBtn.classList.add("runaway");
+    moveNoButton();
   }
 });
 
-/* Runaway logic for NO button */
+/* Mobile + desktop runaway support */
+function moveNoButton() {
+  const btnRect = noBtn.getBoundingClientRect();
+  const padding = 20;
+
+  const maxX = window.innerWidth - btnRect.width - padding;
+  const maxY = window.innerHeight - btnRect.height - padding;
+
+  const x = Math.random() * maxX;
+  const y = Math.random() * maxY;
+
+  noBtn.style.left = x + "px";
+  noBtn.style.top = y + "px";
+}
+
 document.addEventListener("mousemove", (e) => {
   if (!noBtn.classList.contains("runaway")) return;
 
-  const btnRect = noBtn.getBoundingClientRect();
+  const rect = noBtn.getBoundingClientRect();
   const distance = Math.hypot(
-    e.clientX - (btnRect.left + btnRect.width / 2),
-    e.clientY - (btnRect.top + btnRect.height / 2)
+    e.clientX - (rect.left + rect.width / 2),
+    e.clientY - (rect.top + rect.height / 2)
   );
 
-  if (distance < 120) {
-    const x = Math.random() * (window.innerWidth - btnRect.width);
-    const y = Math.random() * (window.innerHeight - btnRect.height);
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
-  }
+  if (distance < 120) moveNoButton();
 });
 
-/* YES BUTTON */
+document.addEventListener("touchstart", () => {
+  if (noBtn.classList.contains("runaway")) moveNoButton();
+});
+
+/* ---- YES BUTTON ---- */
 yesBtn.addEventListener("click", () => {
-  document.querySelectorAll(".floating-gif").forEach(el => el.remove());
+  // Unmute music after interaction (Safari-safe)
+  musicPlayer.src = musicPlayer.src.replace("mute=1", "mute=0");
+
   startFireworks();
 
   mainBox.innerHTML = `
     <h1>YAY ELIZABETH!!! ❤️🥰</h1>
-    <p>You just made me the happiest person alive 💕</p>
-    <a href="sms:+15551234567?body=Yes%20I%20will%20be%20your%20Valentine%20❤️">
-      <button style="font-size:22px; background:#ff4d6d; color:white;">Send Text 💌</button>
+    <p>You just made my whole day 💕</p>
+    <a href="sms:6304498464?body=Yes%20I%20will%20be%20your%20Valentine%20❤️">
+      <button style="font-size:22px; background:#ff4d6d; color:white;">
+        Send Text 💌
+      </button>
     </a>
   `;
 });
 
-/* FLOATING GIFS */
-function createFloatingGif() {
-  const gif = document.createElement("img");
-  gif.src = "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif";
-  gif.className = "floating-gif";
-  gif.style.left = Math.random() * 100 + "vw";
-  gif.style.animationDuration = (Math.random() * 3 + 4) + "s";
-  document.body.appendChild(gif);
-
-  setTimeout(() => gif.remove(), 7000);
-}
-setInterval(createFloatingGif, 800);
-
-/* FIREWORKS */
+/* ---- FIREWORKS ---- */
 function startFireworks() {
   const canvas = document.getElementById("fireworks");
   canvas.style.display = "block";
   const ctx = canvas.getContext("2d");
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const particles = [];
+  let particles = [];
 
   function createFirework() {
     const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height / 2;
-    for (let i = 0; i < 50; i++) {
+    const y = Math.random() * canvas.height * 0.5;
+
+    for (let i = 0; i < 40; i++) {
       particles.push({
-        x, y,
-        angle: Math.random() * 2 * Math.PI,
-        speed: Math.random() * 5 + 2,
-        radius: 2
+        x,
+        y,
+        angle: Math.random() * Math.PI * 2,
+        speed: Math.random() * 4 + 2,
+        radius: 2,
+        life: 60
       });
     }
   }
 
   function animate() {
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillStyle = "rgba(255,192,203,0.15)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    particles.forEach((p, i) => {
+    particles = particles.filter(p => p.life > 0);
+
+    particles.forEach(p => {
       p.x += Math.cos(p.angle) * p.speed;
       p.y += Math.sin(p.angle) * p.speed;
       p.speed *= 0.95;
+      p.life--;
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fillStyle = `hsl(${Math.random()*360},100%,60%)`;
       ctx.fill();
-
-      if (p.speed < 0.5) particles.splice(i, 1);
     });
 
     requestAnimationFrame(animate);
