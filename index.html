@@ -20,30 +20,35 @@ body {
 
 .container {
   background: white;
-  padding: 25px 25px 20px; /* SCOOTED UP */
+  padding: 22px 22px 18px;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  position: relative;
-  z-index: 2;
   width: 340px;
-  overflow: hidden; /* HARD STOP */
+  overflow: hidden;
 }
 
 h1 {
-  margin-top: 0;
-  margin-bottom: 10px;
+  margin: 0 0 8px;
 }
 
 img.main-gif {
-  width: 190px; /* slightly smaller */
+  width: 185px;
   border-radius: 15px;
   margin-bottom: 10px;
 }
 
-.buttons {
+/* YES button row */
+.yes-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+/* NO button playground */
+.no-zone {
   position: relative;
-  height: 120px; /* controlled playground */
-  margin-top: 5px;
+  height: 90px; /* safe movement area */
+  overflow: hidden;
 }
 
 button {
@@ -58,17 +63,15 @@ button {
 #yesBtn {
   background-color: #ff4d6d;
   color: white;
-  position: absolute;
-  left: 0;
-  top: 0;
 }
 
 #noBtn {
   background-color: #6c757d;
   color: white;
   position: absolute;
-  right: 0;
-  bottom: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>
 </head>
@@ -80,8 +83,11 @@ button {
 
   <img class="main-gif" src="IMG_7130.gif" alt="Minion in the woods">
 
-  <div class="buttons" id="buttonBox">
+  <div class="yes-row">
     <button id="yesBtn">Yes 💖</button>
+  </div>
+
+  <div class="no-zone" id="noZone">
     <button id="noBtn">No 🙈</button>
   </div>
 </div>
@@ -89,7 +95,7 @@ button {
 <script>
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
-const buttonBox = document.getElementById("buttonBox");
+const noZone = document.getElementById("noZone");
 const mainBox = document.getElementById("mainBox");
 
 let yesSize = 18;
@@ -99,6 +105,7 @@ let noClicks = 0;
 noBtn.addEventListener("click", () => {
   noClicks++;
 
+  // Grow YES button safely (won't overlap now)
   yesSize += 6;
   yesBtn.style.fontSize = yesSize + "px";
   yesBtn.style.padding = yesSize + "px " + (yesSize * 2) + "px";
@@ -118,24 +125,25 @@ noBtn.addEventListener("click", () => {
   moveNoButton();
 });
 
-/* ---- CONTAINED MOVEMENT ---- */
+/* ---- MOVE NO BUTTON INSIDE SAFE ZONE ---- */
 function moveNoButton() {
-  const boxRect = buttonBox.getBoundingClientRect();
+  const zoneRect = noZone.getBoundingClientRect();
   const btnRect = noBtn.getBoundingClientRect();
 
-  const maxX = boxRect.width - btnRect.width;
-  const maxY = boxRect.height - btnRect.height;
+  const maxX = zoneRect.width - btnRect.width;
+  const maxY = zoneRect.height - btnRect.height;
 
   const x = Math.random() * maxX;
   const y = Math.random() * maxY;
 
   noBtn.style.left = x + "px";
   noBtn.style.top = y + "px";
+  noBtn.style.transform = "none";
 }
 
-/* Touch + mouse support */
-buttonBox.addEventListener("mousemove", moveNoButton);
-buttonBox.addEventListener("touchstart", moveNoButton);
+/* Touch + mouse */
+noZone.addEventListener("mousemove", moveNoButton);
+noZone.addEventListener("touchstart", moveNoButton);
 
 /* ---- YES BUTTON ---- */
 yesBtn.addEventListener("click", () => {
